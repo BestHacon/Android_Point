@@ -4,7 +4,7 @@
     "module": "esnext",
     "baseUrl": "./",
     "moduleResolution": "node",
-    "paths": {
+    "paths": { // 配置路径别名
       "@/*": [
         "src/*"
       ]
@@ -15,5 +15,5 @@
       "dom.iterable",
       "scripthost"
     ]
-  }
+  },
 }
