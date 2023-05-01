@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="basic">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+    content="青柠起始页由毛若昕和杨尚臻开发，是一个简洁、美观、实用的浏览器起始页。青柠起始页以最简洁的界面容纳了多引擎搜索、自定义网站捷径、便笺等实用功能；您可依据喜好对青柠起始页进行高度自定义，让您的网上冲浪体验更加舒心。">
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="renderer" content="webkit">
+  <meta itemprop="image" content="https://limestart-assets.retiehe.com/Lime_QQ_Share.jpg">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'none'; base-uri 'none'; connect-src data: https:; font-src data: https://at.alicdn.com; form-action 'none'; frame-src https://*.retiehe.com; img-src 'self' blob: data: https: chrome-extension: moz-extension:; media-src 'self' blob: chrome-extension: moz-extension:; script-src 'self' 'unsafe-eval' https://*.limestart.cn https://*.retiehe.com https://cdn.staticfile.org https://cdnjs.cloudflare.com https://widget.qweather.net https://widget-s.qweather.net https://widget.heweather.net https://cdn.heweather.com/ https://webapi.amap.com https://restapi.amap.com https://hm.baidu.com; style-src 'self' 'unsafe-inline' https://*.retiehe.com https://widget.heweather.net https://widget.qweather.net; worker-src 'self' blob:;">
+  <title>青柠起始页</title>
+  <link rel="stylesheet" href="static/main-fe45624c26.css">
+  <link rel="canonical" href="limestart_default.html">
+  <link rel="preconnect" href="https://bird.limestart.cn">
+  <link rel="preconnect" href="https://static.retiehe.com">
+  <link rel="shortcut icon" href="limestart-assets.retiehe.com/Lime_Logo.png">
+  <link rel="apple-touch-icon" href="limestart-assets.retiehe.com/apple-touch-icon-lime.png">
+  <script src="static/theme-314b964571.js"></script>
+</head>
+
+<body>
+  <div id="bodyBox"><video id="liveBgBox" autoplay loop muted></video><img id="bgBox" alt>
+    <div class="cover" id="cover"></div>
+    <div id="searchBar"><input type="text" id="inputSearch" name="word" size="30" placeholder="搜索" autocomplete="off">
+      <div class="searchBarBtn" id="btnSearchEng"><i id="iconSearchEng">&#xe651;</i></div>
+      <div class="searchBarBtn" id="btnSearch"><i>&#xe67e;</i></div>
+    </div>
+    <div id="searchSuggestionContainer"></div>
+    <div class="menu" id="menuSearchEng"></div>
+    <div class="menu" id="menuBasics"></div>
+    <div class="tipBox" id="tipBoxCopyPaste"></div>
+    <div class="waves-effect waves-light" id="quoteContainer"><span id="quoteBg"></span>
+      <div id="quoteContent"></div>
+      <div id="quoteSource"></div><button id="btnQuoteMenu" type="button" title="选项"><i>&#xe66e;</i></button>
+    </div>
+    <div class="navbox" id="navbox">
+      <div class="navbox0" id="navbox0">
+        <div class="navboxes" id="navbox1">
+          <div class="shouldNotSwitch" id="navboxCustom" v-cloak>
+            <div v-if="currentFolder === ''" class="shouldNotSwitch" id="presetNavsArea"
+              v-on:click="presetNavsAreaUnfold">
+              <div v-for="(item, index) in presetNavsComputed" v-bind:key="index"
+                class="customNav shouldNotFade shouldNotSwitch added" v-on:click="clicked(item)"
+                v-on:contextmenu.prevent="showCusNavPresetMenu(item, index, $event)"
+                v-on:touchstart.passive="onTouchStart(item)"
+                v-on:touchend.passive="onTouchEnd(item, index, $event, showCusNavPresetMenu)"><i
+                  class="cusNavIcon shouldNotFade shouldNotSwitch" v-bind:style="{backgroundImage: item.color}"
+                  aria-hidden="true">{{item.icon}}</i>
+                <div class="cusNavTitle shouldNotFade shouldNotSwitch">{{item.title}}</div>
+              </div>
+              <div class="cusNavTitle shouldNotFade shouldNotSwitch">预设</div>
+            </div>
+            <div v-for="folderName in foldersComputed" v-bind:key="folderName"
+              class="customNav folder shouldNotFade shouldNotSwitch" v-on:click="folderClicked(folderName)"
+              v-on:contextmenu.prevengt="showMenu(folderName, -1, $event)" v-on:dragend="onDragEnd()"
+              v-on:dragenter="onDragEnter(folderName, $event)">
+              <div v-for="item in listComputed[folderName]" v-bind:key="item.index"
+                class="customNav shouldNotFade shouldNotSwitch added"><img
+                  v-if="item.icon && !item.icon.startsWith('color://')" class="cusNavIcon shouldNotFade shouldNotSwitch"
+                  v-bind:src="item.icon"
+                  v-bind:referrerpolicy="shallSendRef(item.icon) ? 'no-referrer-when-downgrade' : 'no-referrer'"
+                  loading="lazy" alt>
+                <div v-if="item.icon && item.icon.startsWith('color://')"
+                  class="cusNavIcon generated shouldNotFade shouldNotSwitch"
+                  v-bind:style="{backgroundColor: item.backgroundColor, color: item.color}">
+                  <span>{{item.title.substring(0, 1)}}</span></div>
+              </div>
+              <div class="cusNavTitle shouldNotFade shouldNotSwitch">{{folderName}}</div>
+            </div>
+            <div v-if="currentFolder !== ''" class="customNav shouldNotFade shouldNotSwitch" title="返回"
+              v-on:click="backClicked"><i class="shouldNotFade shouldNotSwitch iconAddNav"
+                aria-hidden="true">&#xe7ee;</i></div>
+            <div v-for="item in listComputed[currentFolder]" v-bind:key="item.index"
+              class="customNav shouldNotFade shouldNotSwitch added" draggable="true"
+              v-bind:class="{dragging: isDragging}" v-on:click="clicked(item)"
+              v-on:contextmenu.prevent="showMenu(item, item.index, $event)"
+              v-on:dragstart="onDragStart(item.index, $event)" v-on:dragend="onDragEnd()"
+              v-on:dragenter="onDragEnter(item.index, $event)" v-on:dragover.prevent
+              v-on:touchstart.passive="onTouchStart(item)" v-on:touchend.passive="onTouchEnd(item, item.index, $event)">
+              <img v-if="item.icon && !item.icon.startsWith('color://')"
+                class="cusNavIcon shouldNotFade shouldNotSwitch"
+                v-bind:class="{hidden: !isWindowLoaded || item.icon.startsWith('color://'), loading: item.loading}"
+                v-bind:src="isWindowLoaded ? item.icon : null"
+                v-bind:referrerpolicy="shallSendRef(item.icon) ? 'no-referrer-when-downgrade' : 'no-referrer'"
+                loading="lazy" alt width="24" height="24" v-on:error="onIconError(item, item.index, $event)"
+                v-on:load="onIconLoad(item, item.index, $event)">
+              <div v-if="item.icon && item.icon.startsWith('color://')"
+                class="cusNavIcon generated shouldNotFade shouldNotSwitch"
+                v-bind:class="{hidden: !isWindowLoaded, loading: item.loading}"
+                v-bind:style="{backgroundColor: item.backgroundColor, color: item.color}">
+                <span>{{item.title.substring(0, 1)}}</span></div><span v-if="keyTips && item.shortcutIndex"
+                class="cusNavKeyTip">{{item.shortcutIndex}}</span>
+              <div class="cusNavTitle shouldNotFade shouldNotSwitch">{{item.loading ? "正在保存" : item.title}}</div>
+            </div>
+            <div class="customNav shouldNotFade shouldNotSwitch" title="添加网站捷径" v-on:click="addClicked($event)"><i
+                class="shouldNotFade shouldNotSwitch iconAddNav" aria-hidden="true">&#xe7dc;</i></div>
+          </div>
+        </div>
+        <div class="navboxes" id="navbox2">
+          <div class="shouldNotFade" id="noteListWrap">
+            <div class="shouldNotFade" id="noteList" v-cloak>
+              <div class="noteItem shouldNotFade" v-on:click="newNote()"><i class="shouldNotFade shouldNotSwitch"
+                  id="iconAdd">&#xe7dc;</i><span class="noteTitle shouldNotFade" id="noteTitle0">新便笺</span></div>
+              <div v-for="(item, index) in listReversed" v-bind:key="index" class="noteItem shouldNotFade"
+                v-bind:class="{current: current === index + 1}" v-on:click="open(index + 1)"><span
+                  class="noteTitle shouldNotFade">{{item.text}}</span> <span
+                  class="noteTime shouldNotFade">{{timeAlias[index]}}</span></div>
+            </div>
+          </div>
+          <div class="shouldNotFade shouldNotSwitch" id="textNoteWrap"><textarea class="shouldNotFade shouldNotSwitch"
+              id="textNote" placeholder="在此键入以创建新的便笺" tabindex="-1"></textarea>
+            <div class="shouldNotFade shouldNotSwitch" id="noteToolBar">
+              <div class="toolBarBtns shouldNotFade shouldNotSwitch" id="btnSaveNote" role="button" tabindex="0"
+                title="保存便笺 (Ctrl+S)"><i class="shouldNotFade shouldNotSwitch" id="iconSave">&#xe67c;</i></div>
+              <div class="toolBarBtns shouldNotFade shouldNotSwitch" id="btnPinNote" role="button" tabindex="0"
+                title="固定便笺到主屏幕"><i class="shouldNotFade shouldNotSwitch" id="iconPin">&#xe67b;</i></div>
+              <div class="toolBarBtns shouldNotFade shouldNotSwitch" id="btnDelNote" role="button" tabindex="0"
+                title="删除便笺"><i class="shouldNotFade shouldNotSwitch">&#xe665;</i></div>
+              <div class="toolBarTip shouldNotFade shouldNotSwitch" id="tipNoteCloud"><span id="txtNoteCloudStatus"><a
+                    class="shouldNotFade shouldNotSwitch" href="https://tool.retiehe.com/texteditor"
+                    target="_blank">热铁盒工具箱提供云同步支持</a></span><i class="shouldNotFade shouldNotSwitch"
+                  id="iconNoteCloud">&#xeabf;</i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="navPageSwitchContainer">
+        <div class="navPageSwitch shouldNotFade current" id="navPageSwitch1"><span class="shouldNotFade"></span></div>
+        <div class="navPageSwitch shouldNotFade" id="navPageSwitch2"><span class="shouldNotFade"></span></div>
+      </div>
+      <div class="menu" id="menuCusNavPreset">
+        <div class="menuItem shouldNotFade" id="cusNavMenuPresetFold"><i class="shouldNotFade">&#xeb92;</i>折叠预设捷径</div>
+        <div class="menuItem shouldNotFade red" id="cusNavMenuPresetDel"><i class="shouldNotFade">&#xeb95;</i>删除</div>
+      </div>
+      <div class="menu" id="menuCusNav">
+        <div class="menuItem shouldNotFade" id="cusNavMenuEdit"><i class="shouldNotFade">&#xeb93;</i>编辑</div>
+        <div class="menuItem shouldNotFade red" id="cusNavMenuDel"><i class="shouldNotFade">&#xeb95;</i>删除</div>
+      </div>
+    </div>
+    <div id="timeContainer">
+      <div id="timeText"></div>
+    </div>
+    <div id="cornerBtnsContainer">
+      <div class="cornerBtn" id="btnUser" role="button" tabindex="0" title="用户"><i>&#xe607;</i><span
+          id="offlineIndicator"></span></div>
+      <div class="cornerBtn" id="btnSettings" role="button" tabindex="0" title="设置"><i>&#xe673;</i></div>
+    </div>
+    <div class="tipBox" id="tipBoxCornerInfo"></div>
+    <div class="tipBox" id="tipBoxGuide"></div>
+    <div class="tipBox" id="tipBoxLogin"></div>
+    <div class="tipBox" id="tipBoxFileReceived"></div>
+    <div class="menu" id="menuUser">
+      <div class="menuItem" id="userMenuMyAccount"><span id="menuTextName">User</span>账号管理</div>
+      <div class="menuItem" id="userMenuLogout">退出登录</div>
+    </div>
+    <div class="menu" id="menuSettings">
+      <div class="menuItem" id="setMenuGeneral">常规设置</div>
+      <div class="menuItem" id="setMenuSearchEngPref">搜索引擎偏好</div>
+      <div class="menuItem" id="setMenuBgPref">壁纸偏好</div>
+      <div class="menuGroupingLine"></div>
+      <div class="menuItem" id="setMenuDonate">捐助我们</div>
+      <div class="menuItem" id="setMenuFeedback">帮助和反馈</div>
+    </div>
+    <div id="btnLike" role="button" tabindex="0"><i>&#xe64f;</i> <span id="numLiked">0</span></div>
+    <div class="cusNavForm" id="frmSetCustomNav">
+      <div id="pageSetCusNavMain">
+        <div class="popCaptionS" id="captionSetCusNav">添加网站捷径</div>
+        <div class="btnCloseS" id="btnCloseFrmCusNav" role="button" tabindex="0" title="关闭"><i>&#xe69a;</i></div><input
+          class="inputCustom" id="inputCustomUrl" placeholder="网址" inputmode="url"> <input class="inputCustom"
+          id="inputCustomTitle" placeholder="标题 - 留空即自动获取">
+        <div class="btnSetCusNavDetail" id="btnSetCusNavIcon">图标<span><span
+              id="setCusNavIconSelectedType">自动</span><i>&#xe77c;</i></span></div>
+        <div class="btnSetCusNavDetail" id="btnSetCusNavFolder">收纳夹<span><span
+              id="setCusNavFolderSelectedType">无</span><i>&#xe77c;</i></span></div>
+        <div class="btnCustom" id="btnAddCusNav" role="button" tabindex="0">添加</div>
+      </div>
+      <div id="pageSetCusNavIcon">
+        <div class="captionBarSetCusNav"><i class="btnBackToPageSetCusNav"
+            id="btnBackToPageSetCusNavFromIcon">&#xe77d;</i>
+          <div class="popCaptionS">自定义捷径图标</div>
+        </div>
+        <div class="setCusNavIconOpt">
+          <div class="setCusNavIconType">自动</div>
+          <div class="setCusNavIconDescription">自动获取并设置最适宜的图标。</div><i id="cusNavIconOptCheck">&#xe622;</i>
+        </div>
+        <div class="setCusNavIconOpt">
+          <div class="setCusNavIconType">网站默认</div>
+          <div id="cusNavIconPreviewDefault"></div><span id="tipCusNavIconPreDef"></span>
+        </div>
+        <div class="setCusNavIconOpt">
+          <div class="setCusNavIconType">青柠生成</div>
+          <div id="cusNavIconPreviewGenerated"></div>
+        </div>
+        <div class="link" id="btnRandomCusNavIconPre" role="button"><i>&#xe680;</i>随机</div>
+        <div class="setCusNavIconOpt">
+          <div class="setCusNavIconType">手动设置</div>
+          <div id="cusNavIconPreviewManual"></div>
+        </div><input id="inputCusNavIconUrl" placeholder="在此键入图标/图片文件的URL" inputmode="url">
+      </div>
+      <div id="pageSetCusNavFolder">
+        <div class="captionBarSetCusNav"><i class="btnBackToPageSetCusNav"
+            id="btnBackToPageSetCusNavFromFolder">&#xe77d;</i>
+          <div class="popCaptionS">选择捷径收纳夹</div>
+        </div>
+        <div id="setNewCusNavFolderContainer"><input class="inputCustom" id="inputCusNavFolderName" placeholder="收纳夹名称">
+          <div class="btnRectangle1" id="btnNewCusNavFolder">创建</div>
+        </div>
+        <div id="setCusNavFolderList">
+          <div class="setCusNavFolderOpt">无<i id="cusNavFolderOptCheck">&#xe622;</i></div>
+        </div>
+      </div>
+    </div>
+    <div id="wallpaperInfoContainer">
+      <div id="wpInfoTip"></div>
+      <div id="wpInfoTitle"></div>
+      <div id="wpInfoDetail"></div>
+      <div id="wpInfoCopyright"></div>
+    </div>
+    <div id="pinnedNoteContainer"></div>
+    <footer>
+      <div id="footerBox">&copy; 2023 <a href="https://maorx.cn/" title="毛若昕丨静水流深" target="_blank" class="links"
+          id="copyrightOwner1">毛若昕</a> &amp; <a href="https://www.yangshangzhen.com/" target="_blank" class="links"
+          id="copyrightOwner2">杨尚臻</a><span class="sep"></span><span class="hideWhenBrief"><a
+            href="https://beian.miit.gov.cn" title="工业和信息化部域名信息备案管理系统" target="_blank"
+            class="links">闽ICP备16025935号-2</a><span class="sep"></span><a
+            href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=35010202001376" title="全国互联网安全管理服务平台"
+            target="_blank" class="links">闽公网安备35010202001376号</a><span class="sep"></span></span><span
+          title="关于「青柠起始页」" class="links" id="linkAbout" tabindex="0" role="link">关于</span></div>
+    </footer>
+    <div class="cover1" id="cover1">
+      <div class="popUp" id="popGeneralSettings"><span class="btnClose" role="button" tabindex="0" title="关闭"><span
+            class="btnCloseInner"></span></span>
+        <div class="pCaptionBar">常规设置</div>
+        <div class="pContent" id="contentGSet">
+          <div class="pTitle">常规设置</div>
+          <div class="titleBold setGroupCaption">搜索</div>
+          <div class="setGroup" id="setGroupSearch">
+            <div class="setOptBox"><span class="setOptCaption">自动清空搜索栏</span> <label class="switch"><input
+                  type="checkbox" id="chkAutoClrSearchBar">
+                <div class="slider" id="chkAutoClrSearchBarInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">搜索历史记录</span> <label class="switch"><input
+                  type="checkbox" id="chkSearchHistory">
+                <div class="slider" id="chkSearchHistoryInner"></div>
+              </label></div>
+            <div class="setOptBox" id="setOptBoxSearchBarTabKey"><span class="setOptCaption">在搜索栏按 Tab / Shift + Tab
+                键时，切换到</span>
+              <div class="dropdownGroup">
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnSearchBarTabKey">列表中的下一个 / 上一个搜索引擎</div>
+                  <div class="dropdownContent" id="ddContentSearchBarTabKey"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="titleBold setGroupCaption">导航</div>
+          <div class="setGroup">
+            <div class="setOptBox"><span class="setOptCaption">在新页面打开搜索结果和网站捷径</span> <label class="switch"><input
+                  type="checkbox" id="chkOpenInNew">
+                <div class="slider" id="chkOpenInNewInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">使用数字键 0 ~ 9 打开前十个自定义网站捷径</span> <label
+                class="switch"><input type="checkbox" id="chkCusNavShortcutKey">
+                <div class="slider" id="chkCusNavShortcutKeyInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">在每行显示更多网站捷径</span> <label class="switch"><input
+                  type="checkbox" id="chkShowMoreCusNavIcons">
+                <div class="slider" id="chkShowMoreCusNavIconsInner"></div>
+              </label> <span class="setOptComment">仅在您设备屏幕的逻辑分辨率宽度 ≥ 1280 像素时生效。开启后，便笺编辑区域也会随之变宽。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">离开网站捷径页时自动将其回到顶部</span> <label class="switch"><input
+                  type="checkbox" id="chkAutoScrollTopNavBox">
+                <div class="slider" id="chkAutoScrollTopNavBoxInner"></div>
+              </label></div>
+          </div>
+          <div class="titleBold setGroupCaption">初始化</div>
+          <div class="setGroup">
+            <div class="setOptBox"><span class="setOptCaption" id="setOptCapAutoFocus">青柠起始页加载时自动聚焦到搜索栏</span> <label
+                class="switch"><input type="checkbox" id="chkAutoFocus">
+                <div class="slider" id="chkAutoFocusInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">青柠起始页加载时自动显示二级界面</span> <label class="switch"><input
+                  type="checkbox" id="chkAutoShowSecondPage">
+                <div class="slider" id="chkAutoShowSecondPageInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">将便笺页作为默认的二级界面</span> <label class="switch"><input
+                  type="checkbox" id="chkNoteAsDefault">
+                <div class="slider" id="chkNoteAsDefaultInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">登录后显示问候</span> <label class="switch"><input
+                  type="checkbox" id="chkShowGreeting">
+                <div class="slider" id="chkShowGreetingInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption" style="margin-left: -6px;">「<a
+                  href="https://airportal.cn/" class="link" target="_blank">空投快传</a>」接收协同</span> <label
+                class="switch"><input type="checkbox" id="chkAirportalCo">
+                <div class="slider" id="chkAirportalCoInner"></div>
+              </label> <span class="setOptComment">如果您在过去 90 秒内在其它设备使用「空投快传」上传了文件，青柠起始页加载时会弹出提醒，点击即可一键接收文件。</span></div>
+          </div>
+          <div class="titleBold setGroupCaption">视效和性能</div>
+          <div class="setGroup" id="setGroupVisualEffects">
+            <div class="setOptBox"><span class="setOptCaption">流畅模式</span> <label class="switch"><input type="checkbox"
+                  id="chkLiteMode">
+                <div class="slider" id="chkLiteModeInner"></div>
+              </label> <span class="setOptComment">调整或关闭大部分视觉特效以提升性能。</span></div>
+            <div class="setOptBox"><span class="setOptCaption" id="setOptCapReduceMotion">减弱动态效果</span> <label
+                class="switch"><input type="checkbox" id="chkReduceMotion">
+                <div class="slider" id="chkReduceMotionInner"></div>
+              </label> <span class="setOptComment">动效显示不流畅或影响您的鼠标操作时，可以开启此项。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">为搜索栏应用伸缩动效</span> <label class="switch"><input
+                  type="checkbox" id="chkShrinkSearchBar">
+                <div class="slider" id="chkShrinkSearchBarInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption" id="setOptCapBackdropBlurEf">为遮罩层应用毛玻璃效果</span> <label
+                class="switch"><input type="checkbox" id="chkBackdropBlurEf">
+                <div class="slider" id="chkBackdropBlurEfInner"></div>
+              </label> <span class="setOptComment">关闭此项可提升性能。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">为搜索候选栏应用毛玻璃效果</span> <label class="switch"><input
+                  type="checkbox" id="chkSearchSugBlurEf">
+                <div class="slider" id="chkSearchSugBlurEfInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption" id="setOptCapNavLinksBlurEf">为网站捷径应用毛玻璃效果</span> <label
+                class="switch"><input type="checkbox" id="chkNavLinksBlurEf">
+                <div class="slider" id="chkNavLinksBlurEfInner"></div>
+              </label> <span class="setOptComment">关闭此项可提升性能。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">为网站捷径应用半透明效果</span> <label class="switch"><input
+                  type="checkbox" id="chkNavLinksOpacity">
+                <div class="slider" id="chkNavLinksOpacityInner"></div>
+              </label> <span class="setOptComment">关闭此项可提升性能。</span></div>
+            <div class="setOptBox"><span class="setOptCaption" id="setOptCapNotesBlurEf">为便笺区域应用毛玻璃效果</span> <label
+                class="switch"><input type="checkbox" id="chkNotesBlurEf">
+                <div class="slider" id="chkNotesBlurEfInner"></div>
+              </label> <span class="setOptComment">关闭此项可提升性能。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">为便笺区域应用半透明效果</span> <label class="switch"><input
+                  type="checkbox" id="chkNotesOpacity">
+                <div class="slider" id="chkNotesOpacityInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">闪烁时间分隔符</span> <label class="switch"><input
+                  type="checkbox" id="chkTimeTwinkle">
+                <div class="slider" id="chkTimeTwinkleInner"></div>
+              </label></div>
+            <div class="setOptBox" id="setOptBoxBingWallpaperRes"><span class="setOptCaption">每日壁纸分辨率</span>
+              <div class="dropdownGroup">
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnBingWallpaperRes">1080p</div>
+                  <div class="dropdownContent" id="ddContentBingWallpaperRes"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="titleBold setGroupCaption">颜色</div>
+          <div class="setGroup" id="setGroupColor">
+            <div class="setOptBox"><span class="setOptCaption">主题色</span>
+              <div class="themeColorOptGroup"><span class="themeColorOpt" id="themeColorOptLime" title="青柠"></span>
+                <span class="themeColorOpt" id="themeColorOptIndigo" title="靛青"></span> <span class="themeColorOpt"
+                  id="themeColorOptViolet" title="魅紫"></span> <span class="themeColorOpt" id="themeColorOptRose"
+                  title="玫红"></span> <span class="themeColorOpt" id="themeColorOptBlue" title="岛蓝"></span></div>
+            </div>
+            <div class="setOptBox"><span class="setOptCaption">深色主题</span> <label class="switch"><input type="checkbox"
+                  id="chkDarkMode">
+                <div class="slider" id="chkDarkModeInner"></div>
+              </label></div>
+            <div class="setOptBox"><span class="setOptCaption">自动切换深色主题</span> <label class="switch"><input
+                  type="checkbox" id="chkAutoDarkMode">
+                <div class="slider" id="chkAutoDarkModeInner"></div>
+              </label></div>
+            <div class="setOptBox" id="setOptBoxAutoDarkModeTime"><span class="setOptCaption">自动启用深色主题的时段</span>
+              <div class="dropdownGroup">
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnAutoDarkModeBegin">开始</div>
+                  <div class="dropdownContent" id="ddContentAutoDarkModeBegin"></div>
+                </div><span>~</span>
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnAutoDarkModeEnd">结束</div>
+                  <div class="dropdownContent" id="ddContentAutoDarkModeEnd"></div>
+                </div>
+              </div>
+            </div>
+            <div class="setOptBox"><span class="setOptCaption">为壁纸应用暗角滤镜</span> <label class="switch"><input
+                  type="checkbox" id="chkBgGradientMask">
+                <div class="slider" id="chkBgGradientMaskInner"></div>
+              </label></div>
+          </div>
+          <div class="titleBold setGroupCaption">通用</div>
+          <div class="setGroup" id="setGroupGeneral">
+            <div class="setOptBox"><span class="setOptCaption">同步设置</span> <label class="switch"><input type="checkbox"
+                  id="chkSync">
+                <div class="slider" id="chkSyncInner"></div>
+              </label> <span class="setOptComment">在您的所有已登录设备上同步个性化设置。</span></div>
+            <div class="setOptBox" id="setOptBoxTimeFontWeight"><span class="setOptCaption"
+                style="margin-left: -6px;">「时间」字体</span>
+              <div class="dropdownGroup">
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnTimeFontWeight">粗体</div>
+                  <div class="dropdownContent" id="ddContentTimeFontWeight"></div>
+                </div>
+              </div>
+            </div>
+            <div class="setOptBox"><span class="setOptCaption" style="margin-left: -6px;">「一言」</span> <label
+                class="switch"><input type="checkbox" id="chkQuote">
+                <div class="slider" id="chkQuoteInner"></div>
+              </label> <span class="setOptComment">聚焦到搜索栏时，在其下方空白处随机显示一句格言或诗词。</span></div>
+            <div class="setOptBox hidden" id="setOptBoxQuoteProvider"><span class="setOptCaption"
+                style="margin-left: -6px;">「一言」句库<span class="betaTag"></span></span>
+              <div class="dropdownGroup">
+                <div class="dropdown">
+                  <div class="dropdownBtn" id="ddBtnQuoteProvider">全部</div>
+                  <div class="dropdownContent" id="ddContentQuoteProvider"></div>
+                </div>
+              </div><span class="setOptComment">选取来自「<a href="https://hitokoto.cn/" class="link"
+                  target="_blank">Hitokoto 一言</a>」或「<a href="https://sea.limestart.cn/backend/writingo/from-settings"
+                  class="link" target="_blank">火山写作</a>」的精选句库。</span>
+            </div>
+            <div class="setOptBox"><span class="setOptCaption">天气<span class="betaTag"></span></span> <label
+                class="switch"><input type="checkbox" id="chkWeather">
+                <div class="slider" id="chkWeatherInner"></div>
+              </label> <span class="setOptComment">在二级界面的左下角 / 左上角显示天气。数据提供方：<a href="https://www.qweather.com/"
+                  class="link" target="_blank">和风天气</a>。</span></div>
+            <div class="setOptBox"><span class="setOptCaption">完整显示固定到主屏幕的便笺内容</span> <label class="switch"><input
+                  type="checkbox" id="chkCompletePinnedNote">
+                <div class="slider" id="chkCompletePinnedNoteInner"></div>
+              </label></div>
+            <div class="setOptBox" id="setOptBoxBriefFooter"><span class="setOptCaption">更简洁的页脚信息</span> <label
+                class="switch"><input type="checkbox" id="chkBriefFooter">
+                <div class="slider" id="chkBriefFooterInner"></div>
+              </label></div>
+          </div>
+          <div class="setOptBox individual withButton"><span class="setOptCaption">重置设置</span> <span
+              class="setOptComment">清空本地缓存并将青柠起始页设置项还原为默认值。</span> <span class="btnRectangle3" id="btnReset"
+              role="button" tabindex="0">重置</span></div>
+        </div>
+      </div>
+      <div class="popUp" id="popSearchEng"><span class="btnClose" role="button" tabindex="0" title="关闭"><span
+            class="btnCloseInner"></span></span>
+        <div class="pCaptionBar">搜索引擎偏好</div>
+        <div class="pContent" id="contentSearchEng">
+          <div class="pTitle">搜索引擎偏好</div>
+          <div class="titleBold setGroupCaption">预设搜索引擎</div>
+          <div class="setGroup">
+            <div class="searchEngListItem" id="baiduSearchEngListItem" data-name="baidu" data-alias="百度"
+              data-icon="&#xe651;"><input type="radio" name="radioSearchEng" id="baiduRadioSearchEng">
+              <div>百度<span class="searchEngUrl" id="baiduSearchEngUrl">https://www.baidu.com/s?ie=utf-8&amp;word=</span>
+              </div>
+            </div>
+            <div class="searchEngListItem" id="bingSearchEngListItem" data-name="bing" data-alias="必应"
+              data-icon="&#xe608;"><input type="radio" name="radioSearchEng" id="bingRadioSearchEng">
+              <div>必应<span class="searchEngUrl" id="bingSearchEngUrl">https://www.bing.com/search?q=</span></div>
+            </div>
+            <div class="searchEngListItem" id="googleSearchEngListItem" data-name="google" data-alias="谷歌"
+              data-icon="&#xe624;"><input type="radio" name="radioSearchEng" id="googleRadioSearchEng">
+              <div>谷歌<span class="searchEngUrl" id="googleSearchEngUrl">https://www.google.com/search?q=</span></div>
+            </div>
+            <div class="searchEngListItem" id="magiSearchEngListItem" data-name="magi" data-alias="Magi"
+              data-icon="&#xe603;"><input type="radio" name="radioSearchEng" id="magiRadioSearchEng">
+              <div>Magi<span class="searchEngUrl" id="magiSearchEngUrl">https://magi.com/search?q=</span></div>
+            </div>
+            <div class="searchEngListItem" id="fSearchSearchEngListItem" data-name="fSearch" data-alias="F 搜"
+              data-icon="&#xe601;"><input type="radio" name="radioSearchEng" id="fSearchRadioSearchEng">
+              <div>F 搜<span class="searchEngUrl" id="fSearchSearchEngUrl">https://fsoufsou.com/search?q=</span></div>
+            </div>
+            <div class="searchEngListItem" id="yandexSearchEngListItem" data-name="yandex" data-alias="Yandex"
+              data-icon="&#xe600;"><input type="radio" name="radioSearchEng" id="yandexRadioSearchEng">
+              <div>Yandex<span class="searchEngUrl" id="yandexSearchEngUrl">https://yandex.com/search/?text=</span>
+              </div>
+            </div>
+            <div class="searchEngListItem" id="duckduckgoSearchEngListItem" data-name="duckduckgo"
+              data-alias="DuckDuckGo" data-icon="&#xeb82;"><input type="radio" name="radioSearchEng"
+                id="duckduckgoRadioSearchEng">
+              <div>DuckDuckGo<span class="searchEngUrl" id="duckduckgoSearchEngUrl">https://duckduckgo.com/?q=</span>
+              </div>
+            </div>
+            <div class="searchEngListItem" id="sogouSearchEngListItem" data-name="sogou" data-alias="搜狗搜索"
+              data-icon="&#xeca8;"><input type="radio" name="radioSearchEng" id="sogouRadioSearchEng">
+              <div>搜狗搜索<span class="searchEngUrl" id="sogouSearchEngUrl">https://www.sogou.com/web?query=</span></div>
+            </div>
+            <div class="searchEngListItem" id="qihooSearchEngListItem" data-name="qihoo" data-alias="360 搜索"
+              data-icon="&#xe602;"><input type="radio" name="radioSearchEng" id="qihooRadioSearchEng">
+              <div>360 搜索<span class="searchEngUrl" id="qihooSearchEngUrl">https://www.so.com/s?q=</span></div>
+            </div>
+          </div>
+          <div class="titleBold setGroupCaption">自定搜索引擎</div>
+          <div class="setGroup">
+            <div id="cusSearchEngTip">在下方键入您自定义搜索引擎的 URL。<span id="cusSearchEngUrlTip">以 https://
+                开头，关键词参数名及其连接符结尾。</span></div>
+            <div class="searchEngListItem" id="customSearchEngListItem" data-name="custom" data-alias="自定义"
+              data-icon="&#xe70d;"><input type="radio" name="radioSearchEng" id="customRadioSearchEng">
+              <div>自定义<input type="text" id="inputCusSearchEngUrl" placeholder="在此键入搜索引擎 URL" inputmode="url"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="popUp pureW" id="popBg"><span class="btnClose" role="button" tabindex="0" title="关闭"><span
+            class="btnCloseInner"></span></span>
+        <div class="pCaptionBar">壁纸偏好</div>
+        <div class="pContent widePadding" id="contentBg">
+          <div class="pTitle">壁纸偏好</div>
+          <div class="bgGroupCaption">自定义</div>
+          <div class="bgGroup nowrap">
+            <div class="bgPreviewBox" id="bgPreviewBoxCustom">
+              <div class="bgPreBoxInner unset" id="bgPreBoxInnerCustom">
+                <div class="bgPreBoxMask"><i>&#xe622;</i><i id="iconImg">&#xeb9a;</i></div>
+              </div>
+            </div>
+            <div>
+              <div class="titleBold" id="titleCusBg">将您喜爱的任意图像 / 视频设为壁纸。</div>
+              <div class="pTitleS" id="pCusBgSuggestion">建议分辨率：1920×1080 或更高</div><button class="btnRectangle"
+                id="btnBrowse" type="button">浏览...</button> <a href="https://sea.limestart.cn/backend/redirect/gaoding"
+                class="link" id="linkCreateWallpaper" target="_blank">创作壁纸<span
+                  class="betaTag"></span><i>&#xe77c;</i></a>
+            </div>
+          </div>
+          <div class="bgGroupCaption">默认</div>
+          <div class="bgGroup">
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault1"
+              title="东库特尼的埃尔克河，加拿大不列颠哥伦比亚省 (© Carson Ganci / First Light / age fotostock)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault1">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault2"
+              title="瓦尔内明德的灯塔，德国梅克伦堡-前波美拉尼亚州罗斯托克市 (© Sandra Kreuzinger / Moment Open / Getty Images)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault2">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault3"
+              title="孚日山脉的针叶林，法国 (© Radomir Jakubowski / Minden Pictures)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault3">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault4" title="布莱顿码头，阿德莱德布莱顿 (© Darryl Leach / Alamy)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault4">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault5"
+              title="Loughrigg Tarn的日出，英国英格兰湖区安布尔塞德 (© John Finney photography / Getty Images">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault5">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxDefault6"
+              title="缅因州达马里斯科塔地区的佩马基德灯塔 (© Tom Whitney / Adobe Stock)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerDefault6">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+          </div>
+          <div class="bgGroupCaption">每日</div>
+          <div class="bgGroup nowrap">
+            <div class="bgPreviewBox" id="bgPreviewBoxBing">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerBing">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div>
+              <div class="titleBold">好康的壁纸，每日更新。</div>
+              <div class="pTitleS" id="pWallpaperInfo"></div>
+              <div class="pTitleS">图像来源：<a href="https://cn.bing.com/" class="link"
+                  target="_blank">必应<i>&#xe77c;</i></a>&nbsp;<a class="link" id="linkDlBingWp"
+                  target="_blank">下载原图<i>&#xe77c;</i></a></div>
+            </div>
+          </div>
+          <div class="bgGroupCaption" id="bgGroupCaptionLive">动态</div>
+          <div class="bgGroup" id="bgGroupLive">
+            <div class="bgPreviewBox" id="bgPreviewBoxLive1"
+              title="Old bridge (© Arseniy Chebynkin / DerDenniis / Wallpaper Engine)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerLive1">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxLive2" title="Cabin by the lake (© HoHoHO / Wallpaper Engine)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerLive2">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxLive3"
+              title="Snow Evening (© Evgeny Lushpin / Kesler / Wallpaper Engine)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerLive3">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+            <div class="bgPreviewBox" id="bgPreviewBoxLive4" title="We Wish You a Merry Christmas (© Nimia)">
+              <div class="bgPreBoxInner" id="bgPreBoxInnerLive4">
+                <div class="bgPreBoxMask"><i>&#xe622;</i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="he-plugin-simple"></div>
+  </div>
+  <div class="topNotificationBar" id="topNotificationBar">
+    <marquee id="marqueeBar"><span id="marqueeTitle"></span>&emsp;<span id="marqueeText"></span></marquee>
+    <btn class="btnCloseS" id="btnClosetopNBar" role="button" tabindex="0" title="关闭"><i>&#xe69a;</i></btn>
+  </div>
+  <script src="https://limestart.cn/cdn.staticfile.org/vue/3.2.39/vue.global.prod.js"
+    integrity="sha384-IMIrrtQJkFJmzdU/wg6lF2wi4e7zUOZd2+EbR0lBs5fyWH4dujsVUUemvv9K29em"
+    crossorigin="anonymous"></script>
+  <script src="static/i18n-6a486cbc75.js"></script>
+  <script src="static/main-234ba2bb44.js"></script>
+</body>
+
+</html>

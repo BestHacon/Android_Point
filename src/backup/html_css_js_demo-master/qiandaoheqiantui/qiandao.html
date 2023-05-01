@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body{
+                /* 100%的窗口高度 */
+    height: 100vh;
+    /* 弹性布局 水平 + 垂直居中 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+        }
+        .baowei{
+            width: 300px;
+            height: 100px;
+            background-color: rgb(241, 239, 235);
+            /* 边框加锐度 */
+            border-radius: 5px;
+        }
+        .kaoqinbao{
+            height: 40px;
+            width: 100%;
+            background-color: #DEECF7;
+            /* 边框加锐度 */            
+            border-radius: 5px;
+        }
+        .kaoqin{
+            color: #66b2ec;
+            font-size: 18px;
+            /* 距离左边边框的距离 */
+            margin-left: 10px;
+            /* 内边距 */
+            padding-top: 8px;
+        }
+        .qiandaotui{
+            height: 60px;
+            width: 100%;
+            /* 相对定位 */
+            position: relative;
+        }
+        #qiandao{
+            /* 绝对定位 */
+            position: absolute;
+            top: 0;
+            left: 10%;
+            bottom: 0;
+            margin: auto;
+            width: 50px;
+            background-color: #75bed9;
+            height: 30px;
+            /* 设置行高就可以上下居中 */
+            line-height: 30px;
+            /* 设置左右居中 */
+            text-align: center;
+            color: aliceblue;
+            border-radius: 6px;
+        }
+        #qiantui{
+            /* 绝对定位 */
+            position: absolute;
+            top: 0;
+            right: 10%;
+            bottom: 0;
+            margin: auto;
+            width: 50px;
+            background-color: #75bed9;
+            height: 30px;
+            /* 设置行高就可以上下居中 */
+            line-height: 30px;
+            /* 设置左右居中 */
+            text-align: center;
+            color: aliceblue;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="baowei">
+        <div class="kaoqinbao">
+            <div class="kaoqin">考勤</div>
+        </div>
+        <div class="qiandaotui">
+            <div id="qiandao">签到</div>
+            <div id="qiantui">签退</div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        i = 0;
+        var AA = new Date();
+        var miao = AA.getMinutes();
+
+
+
+        var qiandao = document.getElementById('qiandao');
+        qiandao.onclick = function (){
+            i += 1;
+            // var AA = new Date();
+            if(miao < 10){
+                this.innerHTML = AA.getHours()+':0'+ AA.getMinutes();
+                qiandao.style.backgroundColor="#A4CE9E";
+            }else{
+                this.innerHTML = AA.getHours()+':'+AA.getMinutes();
+                qiandao.style.backgroundColor="#A4CE9E";
+
+            }
+        }
+        var qiantui = document.getElementById('qiantui');
+        qiantui.onclick = function (){
+            i += 1;
+            // var AA = new Date();
+            
+            if(miao < 10){
+                this.innerHTML = AA.getHours()+':0'+ AA.getMinutes();
+                qiantui.style.backgroundColor="#A4CE9E";
+            }else{
+                this.innerHTML = AA.getHours()+':'+AA.getMinutes();
+                qiantui.style.backgroundColor="#A4CE9E";
+
+            }
+        }
+    </script>
+</body>
+</html>
