@@ -6,7 +6,7 @@
         <backgroundCanvas></backgroundCanvas>
       </div>
     </div>
-    <div id="cover" style="opacity: 1;"></div>
+    <div id="cover" style="opacity: 1;"  @click="inputBlur()"></div>
     <div id="time">
       <div id="textTime">
         <loginGlowButton :text="time.hour + ':' + time.minute"></loginGlowButton>
@@ -15,7 +15,7 @@
     </div>
     <div id="searchBar" :class="search ? 'search' : ''">
       <input v-model="aimStu.student_name_id" type="text" id="inputSearch" name="word" size="30"
-        :placeholder="search ? '' : '请输入学号或姓名'" autocomplete="off" @focus="search = true" @blur="inputBlur()"
+        :placeholder="search ? '' : '请输入学号或姓名'" autocomplete="off" @focus="search = true"
         @input="filterStuInfo($event)"
         @keyup.down="(nowIndex = nowIndex < optionStuData.length ? nowIndex + 1 : nowIndex), searchDivMouseEnter(nowIndex)"
         @keyup.up="(nowIndex = nowIndex > 0 ? nowIndex - 1 : nowIndex), searchDivMouseEnter(nowIndex)"
