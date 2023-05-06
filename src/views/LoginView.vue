@@ -11,8 +11,9 @@
       </div>
       <div class="input-box">
         <!-- <form ref="userForm" class="input-box" @submit.prevent="submitForm($event)"> -->
-        <input v-model="account" type="text" placeholder="账号">
-        <input v-model="password" type="password" placeholder="密码" id="password" @focus="enterPassword = true" @blur="enterPassword = false">
+        <input ref="accountInput" v-model="account" type="text" placeholder="账号">
+        <input v-model="password" type="password" placeholder="密码" id="password" @focus="enterPassword = true"
+          @blur="enterPassword = false" @keyup.enter="loginButton()">
         <button @click="loginButton()">登录</button>
         <!-- <input type="submit" ref="loginSubmit" style="display: none" /> -->
         <!-- </form> -->
@@ -22,6 +23,12 @@
 </template>
 
 <script>
+import { inject } from 'vue'
+import apiConfig from '@/api/apiConfig.js'
+import qs from 'qs' // 引入查询参数序列化和解析库
+import { ElMessage, ElNotification } from 'element-plus'
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'LoginView',
   data() {
@@ -31,10 +38,65 @@ export default {
       password: null // 密码
     }
   },
+  mounted() {
+    this.proxy = inject('$http') // 获取全局挂载属性
+    this.router = useRouter()
+    this.$refs.accountInput.focus()
+  },
   methods: {
+    // 登录事件
     loginButton() { // 登录按钮
-      // console.log(this.account, this.password)
-
+      if (!this.account) { // 如果账号为空
+        ElMessage({
+          showClose: true,
+          message: '请输入账号',
+          type: 'warning'
+        })
+      } else if (!this.password) { // 如果密码为空
+        ElMessage({
+          showClose: true,
+          message: '请输入密码',
+          type: 'warning'
+        })
+      } else {
+        const userData = qs.stringify({ account: this.account, password: this.password })
+        this.proxy({
+          method: 'POST',
+          url: apiConfig.userLogin,
+          data: userData
+        }).then(result => {
+          const data = result.data
+          if (data.resCode === 200) {
+            ElNotification({
+              title: '成功',
+              message: '登录成功，即将跳转到后台管理页面',
+              type: 'success'
+            })
+            // 登录功能，保存token
+            const oldToken = localStorage.getItem('token') // 清除旧 token
+            if (oldToken) {
+              localStorage.removeItem('token')
+            }
+            localStorage.setItem('token', data.token)
+            setTimeout(() => {
+              this.router.push('adminn')
+            }, 1000)
+          } else {
+            this.password = ''
+            ElMessage({
+              showClose: true,
+              message: data.message,
+              type: 'error'
+            })
+          }
+        }, err => {
+          ElMessage({
+            showClose: true,
+            message: err,
+            type: 'error'
+          })
+        })
+      }
     }
   }
 }

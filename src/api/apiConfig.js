@@ -18,6 +18,17 @@ export default {
   getLogs: userServe + '/request/getLogs',
   // 登录接口
   userLogin: userServe + '/user/login',
+  // 检查登录接口
+  isLogin: userServe + '/user/isLogin',
   // 注册接口
-  userSignUp: userServe + '/user/signup'
+  userSignUp: userServe + '/user/signup',
+  // 管理员接口
+  // 查询所有问答记录
+  allStuLogs: userServe + '/admin/allStuLogs',
+  // 添加问答记录
+  addLog: userServe + '/admin/addLog',
+  // 获取某年年级的班级信息
+  getGradeAllClasses: userServe + '/admin/getGradeAllClasses',
+  // 获取班级的全部学生信息及其分数
+  getClassAllStudent: userServe + '/admin/getClassAllStudent'
 }

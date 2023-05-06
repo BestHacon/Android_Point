@@ -30,18 +30,18 @@
     </div>
     <div id="searchSuggestionContainer">
       <div v-for="(item, index) in optionStuData" :key="item.student_id" :class="(nowIndex === index) ? 'hover' : ''"
-        @mouseenter="searchDivMouseEnter(index)" @click="searchDivClick()" @mousedown="preventBlur($event)">
+        @mouseenter="searchDivMouseEnter(index)" @click="searchDivClick(index)" @mousedown="preventBlur($event)">
         {{ item.student_name + ' | ' + item.student_id }}
       </div>
     </div>
-    <div id="searchResult" style="max-width: 80%;" :class="showResult ? 'showResult' : ''"
+    <div id="searchResult" style="max-width: 80%;"  :class="showResult ? 'showResult' : ''"
       @mousedown="preventBlur($event)">
       <el-table id="searchResultTable" :data="logs" show-summary empty-text="暂无你的问答记录，请继续加油！(～￣▽￣)～" max-height="330px">
         <el-table-column type="index" width="100px" height="40px" />
-        <el-table-column prop="date" sortable label="时间" width="150px" height="40px" />
-        <el-table-column prop="content" label="内容" width="250px" height="40px" />
-        <el-table-column prop="label" label="标签" width="100px" height="40px" />
-        <el-table-column prop="point" label="分数" width="100px" height="40px" />
+        <el-table-column prop="date" sortable label="时间" width="150px" />
+        <el-table-column prop="content" label="内容" width="250px" />
+        <el-table-column prop="label" label="标签" width="100px" />
+        <el-table-column prop="point" label="分数" width="100px" />
       </el-table>
     </div>
   </div>
@@ -64,6 +64,7 @@ export default {
       aimStu: {
         student_name_first_word: '',
         student_name_id: '',
+        last_student_name_id: '', // 用于储存搜索框上一个状态，主要用来判断是否再输入
         student_id: '',
         student_name: ''
       },
@@ -148,8 +149,11 @@ export default {
     },
     // 筛选目标学生信息
     filterStuInfo(e) {
-      if (e.data !== null) { // 当不是在输入时
-        const val = this.aimStu.student_name_id
+      const now = this.aimStu.student_name_id
+      const last = this.aimStu.last_student_name_id
+      // console.log(now)
+      if (now.length > last.length) { // 在输入时
+        const val = now
         if (val) {
           // stuLoading.value = true
           this.optionStuData = this.stuData.filter((item) => {
@@ -166,12 +170,14 @@ export default {
           this.aimStu.student_name_first_word = ''
           this.aimStu.student_name = ''
         }
-      } else {
+      } else { // 不是在输入时
         this.nowIndex = 0
         this.showResult = false // 注意删除输入框内容时，也不用展示数据
+        this.aimStu.student_name = ''
       }
       // stuLoading.value = false
       // console.log(this.optionStuData)
+      this.aimStu.last_student_name_id = now // 更新数据
     },
     // 搜索框回车事件
     searchEnter() {
@@ -187,7 +193,8 @@ export default {
       this.searchOneStudentLog(this.aimStu.student_name_id)
     },
     // 选项点击事件
-    searchDivClick() {
+    searchDivClick(index) { // 点击事件
+      this.nowIndex = index // 更改 index
       this.searchEnter()
     },
     // 搜索
